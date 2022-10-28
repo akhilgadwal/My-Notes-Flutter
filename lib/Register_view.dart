@@ -1,7 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-
+import 'package:mynotes/constant/routes.dart';
+import 'package:mynotes/uitiles/showerror_dailogue.dart';
+import 'package:mynotes/verification_email.dart';
+import 'dart:developer' as devtools show log;
 import 'firebase_options.dart';
 
 class Register extends StatefulWidget {
@@ -80,18 +83,40 @@ class _RegisterState extends State<Register> {
               final password = _passwords.text;
               //creating users and firebaseauth
               try {
-                final UserCredential = await FirebaseAuth.instance
-                    .createUserWithEmailAndPassword(
-                        email: email, password: password);
-                print(UserCredential);
+                await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                  email: email,
+                  password: password,
+                );
+                final User = FirebaseAuth.instance.currentUser;
+                await User?.sendEmailVerification();
+                Navigator.of(context).pushNamed(VerifyEmailRoute);
               } on FirebaseAuthException catch (e) {
                 if (e.code == 'weak-password') {
-                  print('weak Password');
+                  await ShowErrorDail(
+                    context,
+                    'Weak Password',
+                  );
                 } else if (e.code == 'email-already-in-use') {
-                  print('Email already in used');
+                  await ShowErrorDail(
+                    context,
+                    'Email already used',
+                  );
                 } else if (e.code == 'invalid-email') {
-                  print('Invalid Email');
+                  await ShowErrorDail(
+                    context,
+                    'Invalid Email',
+                  );
+                } else {
+                  await ShowErrorDail(
+                    context,
+                    'Error: ${e.code}',
+                  );
                 }
+              } catch (e) {
+                await ShowErrorDail(
+                  context,
+                  e.toString(),
+                );
               }
             },
             child: const Text('Register'),
@@ -99,7 +124,7 @@ class _RegisterState extends State<Register> {
           TextButton(
               onPressed: () {
                 Navigator.of(context)
-                    .pushNamedAndRemoveUntil('/login/', (route) => false);
+                    .pushNamedAndRemoveUntil(LoginRoute, (route) => false);
               },
               child: Text('Already Register? Login!'))
         ],

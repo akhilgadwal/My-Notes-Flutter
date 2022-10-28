@@ -1,7 +1,7 @@
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:mynotes/firebase_options.dart';
+import 'package:mynotes/constant/routes.dart';
+import 'uitiles/showerror_dailogue.dart';
 
 class Loginpage extends StatefulWidget {
   const Loginpage({super.key});
@@ -59,16 +59,40 @@ class _LoginpageState extends State<Loginpage> {
               //creating log in with email and passwords
               //try catch blocs
               try {
-                final UserCredential = await FirebaseAuth.instance
-                    .signInWithEmailAndPassword(
-                        email: email, password: password);
-                print(UserCredential);
+                await FirebaseAuth.instance.signInWithEmailAndPassword(
+                  email: email,
+                  password: password,
+                );
+                final User = FirebaseAuth.instance.currentUser;
+                if (User?.emailVerified ?? false) {
+                  Navigator.of(context)
+                      .pushNamedAndRemoveUntil(NotesRoute, (route) => false);
+                } else {
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                      VerifyEmailRoute, (route) => false);
+                }
               } on FirebaseAuthException catch (e) {
                 if (e.code == 'user-not-found') {
-                  print('User not found');
+                  await ShowErrorDail(
+                    context,
+                    'User not found',
+                  );
                 } else if (e.code == 'wrong-password') {
-                  print('Wrong Password');
+                  await ShowErrorDail(
+                    context,
+                    'Wrong Password',
+                  );
+                } else {
+                  await ShowErrorDail(
+                    context,
+                    'Error: ${e.code}',
+                  );
                 }
+              } catch (e) {
+                await ShowErrorDail(
+                  context,
+                  e.toString(),
+                );
               }
             },
             child: const Text('Login'),
@@ -76,9 +100,9 @@ class _LoginpageState extends State<Loginpage> {
           TextButton(
               onPressed: () {
                 Navigator.of(context)
-                    .pushNamedAndRemoveUntil('/register/', (route) => false);
+                    .pushNamedAndRemoveUntil(RegisterRoute, (route) => false);
               },
-              child: Text('Register Now for first time'))
+              child: const Text('Register Now for first time'))
         ],
       ),
     );

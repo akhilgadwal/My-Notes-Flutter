@@ -5,6 +5,7 @@ import 'package:mynotes/firebase_options.dart';
 import 'package:mynotes/login.view.dart';
 
 import 'Register_view.dart';
+import 'constant/routes.dart';
 
 ///for verifiying email ///
 class VerifyEmailView extends StatefulWidget {
@@ -20,13 +21,26 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
     return Scaffold(
       appBar: AppBar(title: const Text('verification')),
       body: Column(children: [
-        const Text('Please verify your email'),
+        const Text(
+            'Email has been sent if not received press below given link'),
+        TextButton(
+          onPressed: () async {
+            final user = FirebaseAuth.instance.currentUser;
+            await user?.sendEmailVerification();
+          },
+          child: const Text(
+            'Email Verification',
+          ),
+        ),
         TextButton(
             onPressed: () async {
-              final user = FirebaseAuth.instance.currentUser;
-              await user?.sendEmailVerification();
+              await FirebaseAuth.instance.signOut();
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                RegisterRoute,
+                (route) => false,
+              );
             },
-            child: const Text('Send Email Verification'))
+            child: const Text('Restart'))
       ]),
     );
   }

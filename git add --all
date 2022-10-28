@@ -1,0 +1,115 @@
+[1mdiff --git a/lib/main.dart b/lib/main.dart[m
+[1mindex ffb62ca..7e7225c 100644[m
+[1m--- a/lib/main.dart[m
+[1m+++ b/lib/main.dart[m
+[36m@@ -3,7 +3,10 @@[m [mimport 'package:flutter/material.dart';[m
+ import 'package:firebase_auth/firebase_auth.dart';[m
+ import 'package:mynotes/firebase_options.dart';[m
+ import 'package:mynotes/login.view.dart';[m
+[32m+[m[32mimport 'package:mynotes/verification_email.dart';[m
+[32m+[m[32mimport 'dart:developer' as devtools show log;[m
+ [m
+[32m+[m[32mimport 'MainUI.dart';[m
+ import 'Register_view.dart';[m
+ [m
+ void main() {[m
+[36m@@ -36,13 +39,17 @@[m [mclass Homepage extends StatelessWidget {[m
+       builder: (context, snapshot) {[m
+         switch (snapshot.connectionState) {[m
+           case ConnectionState.done:[m
+[31m-            // final user = FirebaseAuth.instance.currentUser;[m
+[31m-            // if (user?.emailVerified ?? false) {[m
+[31m-            //   return Text('Done');[m
+[31m-            // } else {[m
+[31m-            //   return const VerifyEmailView();[m
+[31m-            // }[m
+[31m-            return Loginpage();[m
+[32m+[m[32m            final user = FirebaseAuth.instance.currentUser;[m
+[32m+[m[32m            if (user != null) {[m
+[32m+[m[32m              if (user.emailVerified) {[m
+[32m+[m[32m                return const Notesview();[m
+[32m+[m[32m                print('Email verified');[m
+[32m+[m[32m              } else {[m
+[32m+[m[32m                return const VerifyEmailView();[m
+[32m+[m[32m              }[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m              return const Loginpage();[m
+[32m+[m[32m            }[m
+ [m
+           default:[m
+             return const CircularProgressIndicator();[m
+[36m@@ -51,3 +58,74 @@[m [mclass Homepage extends StatelessWidget {[m
+     );[m
+   }[m
+ }[m
+[32m+[m
+[32m+[m[32m//Notesview new cls the main ui for it log out also[m
+[32m+[m
+[32m+[m[32menum MenuAction { logout }[m
+[32m+[m
+[32m+[m[32mclass Notesview extends StatefulWidget {[m
+[32m+[m[32m  const Notesview({super.key});[m
+[32m+[m
+[32m+[m[32m  @override[m
+[32m+[m[32m  State<Notesview> createState() => _NotesviewState();[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mclass _NotesviewState extends State<Notesview> {[m
+[32m+[m[32m  @override[m
+[32m+[m[32m  Widget build(BuildContext context) {[m
+[32m+[m[32m    return Scaffold([m
+[32m+[m[32m      appBar: AppBar([m
+[32m+[m[32m        elevation: 0,[m
+[32m+[m[32m        title: Text('Main UI'),[m
+[32m+[m[32m        actions: [[m
+[32m+[m[32m          PopupMenuButton<MenuAction>([m
+[32m+[m[32m            onSelected: (value) async {[m
+[32m+[m[32m              switch (value) {[m
+[32m+[m[32m                case MenuAction.logout:[m
+[32m+[m[32m                  final shouldlogout = await ShowDailogueBox(context);[m
+[32m+[m[32m                  if (shouldlogout) {[m
+[32m+[m[32m                    await FirebaseAuth.instance.signOut();[m
+[32m+[m[32m                    Navigator.of(context)[m
+[32m+[m[32m                        .pushNamedAndRemoveUntil('/login/', (_) => false);[m
+[32m+[m[32m                  }[m
+[32m+[m[32m              }[m
+[32m+[m[32m            },[m
+[32m+[m[32m            itemBuilder: (context) {[m
+[32m+[m[32m              return [[m
+[32m+[m[32m                const PopupMenuItem<MenuAction>([m
+[32m+[m[32m                  value: MenuAction.logout,[m
+[32m+[m[32m                  child: Text('Log Out'),[m
+[32m+[m[32m                )[m
+[32m+[m[32m              ];[m
+[32m+[m[32m            },[m
+[32m+[m[32m          )[m
+[32m+[m[32m        ],[m
+[32m+[m[32m      ),[m
+[32m+[m[32m      body: const Text('Hello World'),[m
+[32m+[m[32m    );[m
+[32m+[m[32m  }[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32mFuture<bool> ShowDailogueBox(BuildContext context) {[m
+[32m+[m[32m  return showDialog<bool>([m
+[32m+[m[32m    context: context,[m
+[32m+[m[32m    builder: (context) {[m
+[32m+[m[32m      return AlertDialog([m
+[32m+[m[32m        title: const Text('Sign Out'),[m
+[32m+[m[32m        content: const Text('Are you sure u want to LogOut'),[m
+[32m+[m[32m        actions: [[m
+[32m+[m[32m          TextButton([m
+[32m+[m[32m              onPressed: () {[m
+[32m+[m[32m                Navigator.of(context).pop(false);[m
+[32m+[m[32m              },[m
+[32m+[m[32m              child: const Text('Cancel')),[m
+[32m+[m[32m          TextButton([m
+[32m+[m[32m              onPressed: () {[m
+[32m+[m[32m                Navigator.of(context).pop(true);[m
+[32m+[m[32m              },[m
+[32m+[m[32m              child: const Text('Logout')),[m
+[32m+[m[32m        ],[m
+[32m+[m[32m      );[m
+[32m+[m[32m    },[m
+[32m+[m[32m  ).then((value) => value ?? false);[m
+[32m+[m[32m}[m
